@@ -40,5 +40,5 @@ markers[unknown==255] = 0
 markers = cv2.watershed(img,markers)
 img[markers == -1] = [255,0,0]
 
-#cv2.imshow('image', img)
-#cv2.waitKey(0)
+cv2.imshow('image', img)
+cv2.waitKey(0)
