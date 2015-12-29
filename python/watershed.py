@@ -4,6 +4,7 @@
 # import the necessary packages
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
+from skimage import measure
 from scipy import ndimage
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,7 +19,9 @@ import cv2
 
 # load the image and perform pyramid mean shift filtering
 # to aid the thresholding step
-image = cv2.imread('carSpace.png')
+
+imName = 'carSpace4.jpg'
+image = cv2.imread( imName)
 shifted = cv2.pyrMeanShiftFiltering(image, 21, 51)
 
 #cv2.imshow("Input", image)
@@ -27,6 +30,9 @@ shifted = cv2.pyrMeanShiftFiltering(image, 21, 51)
 # convert the mean shift image to grayscale, then apply
 # Otsu's thresholding
 gray = cv2.cvtColor(shifted, cv2.COLOR_BGR2GRAY)
+
+
+# http://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html#gsc.tab=0
 thresh = cv2.threshold(gray, 0, 255,
 	cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
@@ -40,7 +46,7 @@ thresh = cv2.threshold(gray, 0, 255,
 # pixel to the nearest zero pixel, then find peaks in this
 # distance map
 D = ndimage.distance_transform_edt(thresh)
-localMax = peak_local_max(D, indices=False, min_distance=5,
+localMax = peak_local_max(D, indices=False, min_distance=50,
 	labels=thresh)
 
 fig, ax = plt.subplots(1, 3, figsize=(8, 3), sharex=True, sharey=True, subplot_kw={'adjustable':'box-forced'})
@@ -53,6 +59,30 @@ ax3.plot(localMax[:,1], localMax[:,0], 'r')
 # using 8-connectivity, then appy the Watershed algorithm
 markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
 labels = watershed(-D, markers, mask=thresh)
+
+
+contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+#cv2.drawContours(image,contours,-1,(0,255,0),-1)
+
+cnt = contours[0]
+
+rect = cv2.minAreaRect(cnt)
+box = cv2.boxPoints(rect)
+box = np.int0(box)
+cv2.drawContours(img,[box],0,(0,0,255),2)
+
+# Shows car well. 
+
+
+cv2.imwrite("processed" + imName, image)
+
+cv2.imshow("Output", image)
+
+cv2.waitKey(0)
+
+#cv2.findContours(image, 
+
 print("[INFO] {} unique segments found".format(len(np.unique(labels)) - 1))
 
 # loop over the unique labels returned by the Watershed
@@ -80,5 +110,8 @@ for label in np.unique(labels):
 		cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
 # show the output image
+cv2.imwrite("processed" + imName, image)
+
 cv2.imshow("Output", image)
+
 cv2.waitKey(0)
