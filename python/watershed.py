@@ -1,7 +1,7 @@
 # USAGE
 # python watershed.py --image images/coins_01.png
 
-# import the necessary packages
+# packages
 from skimage.feature import peak_local_max
 from skimage.morphology import watershed
 from skimage import measure
@@ -11,42 +11,36 @@ import numpy as np
 import argparse
 import cv2
 
-# construct the argument parse and parse the arguments
-#ap = argparse.ArgumentParser()
-#ap.add_argument("-i", "--image", required=True,
-#	help="path to input image")
-#args = vars(ap.parse_args())
 
-# load the image and perform pyramid mean shift filtering
-# to aid the thresholding step
 
-imName = 'carSpace4.jpg'
+#for i in range(8,9):
+	
+imName = "carSpace" + str(4) + ".jpg"
+print(imName)
 image = cv2.imread( imName)
 shifted = cv2.pyrMeanShiftFiltering(image, 21, 51)
 
-#cv2.imshow("Input", image)
-#cv2.waitKey(0)
+width, height = image.shape[:2]
+print("Width: ", width, "Height: ", height)
 
-# convert the mean shift image to grayscale, then apply
-# Otsu's thresholding
+
+# convert the mean shift image to grayscale, apply Otsu's thresholding
 gray = cv2.cvtColor(shifted, cv2.COLOR_BGR2GRAY)
+#cv2.imwrite("gray" + imName, gray)
 
-
-# http://docs.opencv.org/master/d7/d4d/tutorial_py_thresholding.html#gsc.tab=0
 thresh = cv2.threshold(gray, 0, 255,
 	cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
+print ("Thresh: ", thresh)
 #cv2.imshow("Thresh", thresh)
 #cv2.waitKey(0)
-
-
 
 
 # compute the exact Euclidean distance from every binary
 # pixel to the nearest zero pixel, then find peaks in this
 # distance map
 D = ndimage.distance_transform_edt(thresh)
-localMax = peak_local_max(D, indices=False, min_distance=50,
+localMax = peak_local_max(D, indices=False, min_distance=20,
 	labels=thresh)
 
 fig, ax = plt.subplots(1, 3, figsize=(8, 3), sharex=True, sharey=True, subplot_kw={'adjustable':'box-forced'})
@@ -54,34 +48,15 @@ ax1, ax2, ax3 = ax.ravel()
 
 ax3.plot(localMax[:,1], localMax[:,0], 'r')
 
-
 # perform a connected component analysis on the local peaks,
 # using 8-connectivity, then appy the Watershed algorithm
 markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
 labels = watershed(-D, markers, mask=thresh)
 
-
-contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-
-#cv2.drawContours(image,contours,-1,(0,255,0),-1)
-
-cnt = contours[0]
-
-rect = cv2.minAreaRect(cnt)
-box = cv2.boxPoints(rect)
-box = np.int0(box)
-cv2.drawContours(img,[box],0,(0,0,255),2)
-
-# Shows car well. 
-
-
-cv2.imwrite("processed" + imName, image)
+markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
+labels = watershed(-D, markers, mask=thresh)
 
 cv2.imshow("Output", image)
-
-cv2.waitKey(0)
-
-#cv2.findContours(image, 
 
 print("[INFO] {} unique segments found".format(len(np.unique(labels)) - 1))
 
@@ -105,13 +80,16 @@ for label in np.unique(labels):
 
 	# draw a circle enclosing the object
 	((x, y), r) = cv2.minEnclosingCircle(c)
-	cv2.circle(image, (int(x), int(y)), int(r), (0, 255, 0), 2)
-	cv2.putText(image, "#{}".format(label), (int(x) - 10, int(y)),
+	print("Width * .23: ", width * .23)
+	if (r > width  * .2):
+		cv2.circle(image, (int(x), int(y)), int(r), (0, 255, 0), 2)
+		cv2.putText(image, "#{}".format(label), (int(x) - 10, int(y)),
 		cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
-# show the output image
-cv2.imwrite("processed" + imName, image)
+# show the output imagew
 
 cv2.imshow("Output", image)
+cv2.imwrite("Processed" + imName, image)
 
 cv2.waitKey(0)
+
