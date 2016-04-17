@@ -1,0 +1,8 @@
+('X: ', [array([[[413,  47]],    # returned from segmentation
+
+       [[413,  49]],
+
+
+('X: ', array([[ 0.09762701,  0.43037873],   # expected data type
+       [ 0.20552675,  0.08976637],
+

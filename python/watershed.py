@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import cv2
-
-
+import quadtree_example
 
 #for i in range(8,9):
 	
@@ -43,7 +42,7 @@ D = ndimage.distance_transform_edt(thresh)
 localMax = peak_local_max(D, indices=False, min_distance=20,
 	labels=thresh)
 
-# print("localMax: ", localMax)
+print("localMax: ", localMax)
 
 fig, ax = plt.subplots(1, 3, figsize=(8, 3), sharex=True, sharey=True, subplot_kw={'adjustable':'box-forced'})
 ax1, ax2, ax3 = ax.ravel()
@@ -52,6 +51,7 @@ ax3.plot(localMax[:,1], localMax[:,0], 'r')
 
 markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
 labels = watershed(-D, markers, mask=thresh)
+
 
 # perform a connected component analysis on the local peaks,
 # using 8-connectivity, then appy the Watershed algorithm
@@ -64,8 +64,12 @@ print("[INFO] {} unique segments found".format(len(np.unique(labels)) - 1))
 # loop over the unique labels returned by the Watershed
 # algorithm
 
+#quadtree = quadtree_example
 
 for label in np.unique(labels):
+
+	
+	
 	# if the label is zero, we are examining the 'background'
 	# so simply ignore it
 	if label == 0:
@@ -76,10 +80,16 @@ for label in np.unique(labels):
 	mask = np.zeros(gray.shape, dtype="uint8")
 	mask[labels == label] = 255
 
+
+	print("mask: ", mask)
 	# detect contours in the mask and grab the largest one
 	cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
 		cv2.CHAIN_APPROX_SIMPLE)[-2]
 	c = max(cnts, key=cv2.contourArea)
+	
+	#print("cnts: ", cnts)
+	print("c: ", c[0])
+	
 
 	# draw a circle enclosing the object
 	((x, y), r) = cv2.minEnclosingCircle(c)
@@ -90,7 +100,8 @@ for label in np.unique(labels):
 		cv2.putText(image, "#{}".format(label), (int(x) - 10, int(y)),
 		cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
-	
+	#print("cnts", cnts)
+	quadtree_example.main(cnts[0])
 	markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
 	labels = watershed(-D, markers, mask=thresh)
 
