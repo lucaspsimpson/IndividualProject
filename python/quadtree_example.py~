@@ -107,16 +107,18 @@ def main(X):
 	np.random.seed(0)
 
 	# X is a 2 * 30 array. 
-	#X = np.random.random((30, 2)) * 2 - 1
+	X = np.random.random((30, 2)) * 2 - 1
 	print("X: ", X)
 	X[:, 1] *= 0.1
 	X[:, 1] += X[:, 0] ** 2
 
 	#------------------------------------------------------------
 	# Use our Quad Tree class to recursively divide the space
+	#mins = (0, 0)
+	#maxs = (238, 570)
+
 	mins = (-1.1, -0.1)
 	maxs = (1.1, 1.1)
-
 	#mins = (0,0)
 	#maxs = (570,240)	
 

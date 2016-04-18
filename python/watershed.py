@@ -66,6 +66,8 @@ print("[INFO] {} unique segments found".format(len(np.unique(labels)) - 1))
 
 #quadtree = quadtree_example
 
+points = []
+
 for label in np.unique(labels):
 
 	
@@ -81,14 +83,14 @@ for label in np.unique(labels):
 	mask[labels == label] = 255
 
 
-	print("mask: ", mask)
+	#print("mask: ", mask)
 	# detect contours in the mask and grab the largest one
 	cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
 		cv2.CHAIN_APPROX_SIMPLE)[-2]
 	c = max(cnts, key=cv2.contourArea)
 	
 	#print("cnts: ", cnts)
-	print("c: ", c[0])
+	#print("c: ", c[0])
 	
 
 	# draw a circle enclosing the object
@@ -100,14 +102,27 @@ for label in np.unique(labels):
 		cv2.putText(image, "#{}".format(label), (int(x) - 10, int(y)),
 		cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
-	#print("cnts", cnts)
-	quadtree_example.main(cnts[0])
+	# np.reshape(cnts, (2, 2))
+	#print("shape", cnts.shape)
+	#plt.imshow(cnts[0][0])	
+	#print("cnts", cnts[0][0][0])
+	myarray = np.asarray(cnts)
+	#print("Shape: ", myarray.shape	)
+	points.append(myarray[0][0][0])
+	
 	markers = ndimage.label(localMax, structure=np.ones((3, 3)))[0]
 	labels = watershed(-D, markers, mask=thresh)
 
 # show the output imagew
 
-cv2.imshow("Output", image)
+pointsArray = np.asarray(points, dtype=float)
+pointsArray = pointsArray/(400.0)
+print("Points: ", pointsArray)
+print("Shape: ", pointsArray.shape)
+X = np.random.random((30, 2)) * 2 - 1
+print("Random 2d " , X)
+quadtree_example.main(pointsArray)
+#cv2.imshow("Output", image)
 cv2.imwrite("Processed" + imName, image)
 
 cv2.waitKey(0)

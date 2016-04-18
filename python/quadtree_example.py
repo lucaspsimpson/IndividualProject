@@ -114,9 +114,11 @@ def main(X):
 
 	#------------------------------------------------------------
 	# Use our Quad Tree class to recursively divide the space
+	#mins = (0, 0)
+	#maxs = (238, 570)
+
 	mins = (-1.1, -0.1)
 	maxs = (1.1, 1.1)
-
 	#mins = (0,0)
 	#maxs = (570,240)	
 
